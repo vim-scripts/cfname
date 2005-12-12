@@ -1,6 +1,6 @@
 " File: cfname.vim
 " Author: Fabio Visona' 
-" Version: 1.0 (2005-12-12)
+" Version: 2.0 (2005-12-12)
 "
 " This is a very simple script for C/C++ programmers; it probably has
 " bugs/limits; maybe something similar already exists but I was not able to find it.
@@ -11,8 +11,30 @@
 "    ff: shows the function prototype on the command line
 "    fb: jumps to the function beginning
 "    fe: jumps to the function end
+"    fz: folds the function
+"    fo: unfolds the function
+"    
+" Also, the function name is visible between square brackets on the status
+" line, with automatic update.   
+" 
+" Revision history:
+" 1.0: first revision
+" 2.0: Added "fz" and "fo" fold functions; shown the function name on the
+" status bar
 "
 
+let g:CF_FunctionName = ""
+let g:CF_FunctionEnd = 0 
+
+function! CF_UpdateFunctionNameForStatusBar()
+    let lastfunrow = searchpair('{', '', '}', 'rn')
+    if lastfunrow != g:CF_FunctionEnd	    
+      let g:CF_FunctionEnd = lastfunrow	     
+      let g:CF_FunctionName = s:CF_GetPrototype(1)
+    endif 
+    return g:CF_FunctionName
+endfunction
+	
 function! s:CF_GetPrototype(nameonly_or_fullprototype)
     "save current position
     let prevrow = line(".")
@@ -57,6 +79,8 @@ command! -nargs=0 CFunjumpend :call s:CF_JumpFunctionEnd()
 map ff :CFunprototype<CR>
 map fb :CFunjumpstart<CR>
 map fe :CFunjumpend<CR>
+map fz :CFunjumpend<CR>zf%
+map fo zo
 
-
+set statusline=%<%f\ %h%m%r\ [%{CF_UpdateFunctionNameForStatusBar()}]%=%-14.(%l,%c%V%)\ %P
 
