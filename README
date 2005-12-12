@@ -1,0 +1,49 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1429
+
+This is a simple (limited) script for C/C++ programmers.
+When editing source files with very long functions, it may happen the 
+programmer does not know which function the current line is in (e.g. 
+when using tags and jumping with Ctrl-] or jumping after a search). 
+Here are some shortcuts to be typed in normal mode: 
+   ff: shows the function prototype on the command line 
+   fb: jumps to the function beginning 
+   fe: jumps to the function end 
+   ft: jumps back where the cursor was before typing 'fb' or 'fe'
+       (the first 'fb' or 'fe' if a sequence of them is typed)
+   fz: folds the function 
+   fo: unfolds the function      
+Also, the function name is visible between square brackets on the status 
+line, with automatic update. To disable/enable this feature on-the-go use 'fd'/'fs'.
+To disable it steadily, comment the statements 
+'au BufRead,BufNewFile * CFunSetStatusByFileName' and
+'au BufEnter * CFunSetStatusByFileName' by putting a " in front of them.
+
+Note that, by default, the status line is not visible when only one window is open.
+If you like to have it always visible, add the statement 'set laststatus=2' in the script.
+
+
+***KNOWN ISSUES***: 
+- The automatic update of the status bar may slow down or even block the cursor movements. 
+  This has been experienced with VIM running on an UNIX machine; also experienced with
+  very large files and functions. Refer to the instructions above to disable the status line update. 
+
+- In files with comments like "// ... }" (with unmatched '{' or '}' brackets), the script does not
+  work well (however, from version 2.2 on, the cursor should behave properly). 
+  I think it will not be easy to fix this problem. 
+
+
+***SPECIAL VERSION***
+There is a special version 3.0a by Yakov Lerner. This version has two differences with respect
+to version 3.0:
+1) if the user has a non-standard status line, that is preserved and the function name information
+   is added to it (the status line is not changed to default);
+2) the status line is updated with the function name information only after a while if the
+   cursor position is held (it shows [...] before). That is useful if you feel window scrolling
+   is slowed down too much.
+With version 3.0a, use a capital F as the first letter for shortcuts.
+
+
+Note that taglist.vim (vimscript #273), the most downloaded script, already does the job of showing 
+the function prototype, together with a lot more! However, try this little thing too!
+
+
