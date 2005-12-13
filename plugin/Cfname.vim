@@ -34,7 +34,7 @@ function! CF_UpdateFunctionNameForStatusBar()
     endif 
     return g:CF_FunctionName
 endfunction
-	
+
 function! s:CF_GetPrototype(nameonly_or_fullprototype)
     "save current position
     let prevrow = line(".")
