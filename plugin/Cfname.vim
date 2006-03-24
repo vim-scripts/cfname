@@ -1,7 +1,7 @@
-" http://www.vim.org/scripts/script.php?script_id=1429
 " File: cfname.vim
-" Author: Fabio Visona', Yakov Lerner 
-" Version: 3.0a (2006-03-24)
+" Author: Fabio Visona' 
+" Contributions by: Yakov Lerner (see below)
+" Version: 3.0 (2006-03-24)
 "
 " This is a simple (limited) script for C/C++ programmers.
 " When editing source files with very long functions, it may happen the 
@@ -47,12 +47,7 @@
 " 3.0: The function name is now automatically displayed on the status bar only for *.c,
 "      *.cpp or *.cc files, because the status bar update caused the scrolling of non-c 
 "      files to slow down unnecessarily. These changes have been contributed by Yakov Lerner.
-" 3.0a: - If the user has a non-standard status line, that is preserved and the function name information
-"         is added to it (the status line is not changed to default);
-"       - The status line is updated with the function name information only after a while if the
-"         cursor position is held (it shows [...] before). That is useful if you feel window scrolling
-"         is slowed down too much.
-"
+"      
 
 
 let g:CF_FunctionName = ""
@@ -62,19 +57,9 @@ let g:CF_MemRow = 0
 let g:CF_MemCol = 0
 let g:CF_MemRow_GP = 0
 let g:CF_MemCol_GP = 0
-let s:InHoldCount=0
-let s:RefreshCount=0
 
 
 function! CF_UpdateFunctionNameForStatusBar()
-    let s:RefreshCount = s:RefreshCount + 1
-    " we want to make searches only when called from CursorHold
-    if s:InHoldCount == s:RefreshCount-1 || s:RefreshCount%10000==0
-       let s:InHoldCount=0   " allow search
-    else
-        return '...'         " wait until CursorHold event
-    endif
-
     let lastfunrow = searchpair('{', '', '}', 'rn')
     if lastfunrow != g:CF_FunctionEnd	
       let g:CF_FunctionEnd = lastfunrow	     
@@ -157,55 +142,36 @@ endfunction
 
 
 function! s:CF_EnableFunctionNameOnStatusBar()
-    if exists("s:saved_statusline")| return | endif
-    let s:saved_statusline=&statusline
-    "set statusline=%<%f\ %h%m%r\ [%{CF_UpdateFunctionNameForStatusBar()}]%=%-14.(%l,%c%V%)\ %L    
-    if &statusline == "" 
-        let &statusline="%<%f %h%m%r%=%-14.(%l,%c%V%) %L"
-    endif
-    if &statusline =~# "%r" 
-        let &statusline=substitute(&statusline, "%r", "%r [%{CF_UpdateFunctionNameForStatusBar()}]", "")
-    else
-        let &statusline="[%{CF_UpdateFunctionNameForStatusBar()}]".&statusline
-    endif
+    set statusline=%<%f\ %h%m%r\ [%{CF_UpdateFunctionNameForStatusBar()}]%=%-14.(%l,%c%V%)\ %P    
 endfunction
-
-au CursorHold * let s:InHoldCount=s:RefreshCount
 
 
 function! s:CF_DisableFunctionNameOnStatusBar()
-    "set statusline=%<%f\ %h%m%r%=%-14.(%l,%c%V%)\ %L
-    if exists("s:saved_statusline")
-        let &statusline=s:saved_statusline
-        unlet s:saved_statusline
-    endif
+    set statusline=%<%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 endfunction
 
 
-command! -bar -nargs=0 CFunprototype :call s:CF_GetPrototype(0)
-command! -bar -nargs=0 CFunjumpstart :call s:CF_JumpFunctionStart()
-command! -bar -nargs=0 CFunjumpend :call s:CF_JumpFunctionEnd()
-command! -bar -nargs=0 CFunjumpback :call s:CF_RestoreCursorPosition()
+command! -nargs=0 CFunprototype :call s:CF_GetPrototype(0)
+command! -nargs=0 CFunjumpstart :call s:CF_JumpFunctionStart()
+command! -nargs=0 CFunjumpend :call s:CF_JumpFunctionEnd()
+command! -nargs=0 CFunjumpback :call s:CF_RestoreCursorPosition()
+command! -nargs=0 CFunenablestatusinfo :call s:CF_EnableFunctionNameOnStatusBar()
+command! -nargs=0 CFundisablestatusinfo :call s:CF_DisableFunctionNameOnStatusBar()
 command! -bar -nargs=0 CFunEnablestatusinfo :call s:CF_EnableFunctionNameOnStatusBar()
 command! -bar -nargs=0 CFunDisablestatusinfo :call s:CF_DisableFunctionNameOnStatusBar()
 command! -bar -nargs=0 CFunSetStatusByFileName if expand('%') =~# '\.c$\|\.cpp$\|\.cc$' | CFunEnablestatusinfo | else | CFunDisablestatusinfo | endif
 
-" before 2006-03-21, this was enabled for all files.
-" after  2006-03-21, we enable it for *.c files, disable for all other files.
-map Fd :CFunDisablestatusinfo<CR>
-map Fs :CFunEnablestatusinfo<CR>
 au BufRead,BufNewFile * CFunSetStatusByFileName
 au BufEnter * CFunSetStatusByFileName
-"[this was on before 2006-03-21] call s:CF_EnableFunctionNameOnStatusBar()
 
 
-map Ff :CFunprototype<CR>
-map Fb :CFunjumpstart<CR>
-map Fe :CFunjumpend<CR>
-map Ft :CFunjumpback<CR>
-map Fz :CFunjumpend<CR>zf%
-map Fo zo
-map F? :echo "Ff show current funtion prototype\nFb to function beg\nFe to func end\nFt go back\nFs show current func name on status line\nFd disable\nFs enable "<cr>
-
+map ff :CFunprototype<CR>
+map fb :CFunjumpstart<CR>
+map fe :CFunjumpend<CR>
+map ft :CFunjumpback<CR>
+map fz :CFunjumpend<CR>zf%
+map fo zo
+map fd :CFundisablestatusinfo<CR>
+map fs :CFunenablestatusinfo<CR>
 
 
